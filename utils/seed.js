@@ -1,6 +1,6 @@
 const connection = require('../config/connection');
 const { Thought, User } = require('../models');
-const { getRandomUser, getRandomReactions } = require('./data');
+const { getRandomUser, getRandomReactions, getRandomThought, getRandomEmail } = require('./data');
 
 connection.on('error', (err) => err);
 
@@ -28,27 +28,39 @@ connection.once('open', async () => {
 
     const thoughtText = getRandomThought();
     const createdAt = Date.now();
-    const username = getRandomUser();
+    const username = getRandomUser()
 
     thoughts.push({
       thoughtText,
       createdAt,
       username,
+      reactions,
     });
   }
 
   // Add students to the collection and await the results
   const thoughtData = await Thought.create(thoughts);
 
-  // Add courses to the collection and await the results
-  await User.create({
-    username: 'JohnnyRules23',
-    email: "Johnny@gmail.com",
-    thoughts: [...thoughtData.map(({ _id }) => _id)],
-  });
+  const users = [];
+
+  for (let i = 0; i < 2; i++) {
+    const username = getRandomUser();
+    const email = getRandomEmail();
+    const friends = [];
+
+    users.push({
+      username: username,
+      email: email,
+      thoughts: [...thoughtData.map(({ _id }) => _id)],
+      friends: friends
+    });
+  }
+
+  const userData = await User.create(users);
 
   // Log out the seed data to indicate what should appear in the database
   console.table(thoughts);
   console.info('Seeding complete! 🌱');
   process.exit(0);
 });
+
